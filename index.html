@@ -629,6 +629,29 @@
     }
 }
 
+.display-mode .bottom-toolbar,
+.display-mode .controls-area {
+    display: none !important;
+}
+.display-mode .controls-hidden .controls-area {
+    display: none !important;  /* Redundante, pero asegura */
+}
+/* Opcional: Ajusta layout para modo display (más espacio para scores/timer) */
+.display-mode .scoring-area {
+    gap: 50px;  /* Más espacio entre competidores */
+}
+.display-mode .top-section {
+    margin-bottom: 50px;  /* Más margen para timer */
+}
+
+.display-mode .timer {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+.display-mode .modal {
+    display: none !important;  /* Oculta modales en externa; úsalos solo en principal */
+}
+
     </style>
 </head>
 <body>
@@ -708,9 +731,10 @@
 
         <div class="bottom-toolbar">
     <div class="left-icons">           
-        <button class="toolbar-icon" onclick="showSettings()" title="Configuración">⚙</button>
-        <button class="toolbar-icon" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
-    </div>
+    <button class="toolbar-icon" onclick="showSettings()" title="Configuración">⚙</button>
+    <button class="toolbar-icon" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+    <button class="toolbar-icon" onclick="openExternalDisplay()" title="Abrir en Pantalla Externa">🖥️</button>  <!-- Nuevo botón -->
+</div>
     <div class="center-icon">
         <button class="toolbar-icon visibility-toggle" id="visibilityToggle" onclick="toggleControlsVisibility()" title="Ocultar/Mostrar controles">📝</button>
     </div>
@@ -899,18 +923,15 @@
     restTime: 60
 };
 
+        let broadcastChannel = null;
+if (typeof BroadcastChannel !== 'undefined') {
+    broadcastChannel = new BroadcastChannel('taekwondo-sync');
+}
+
         // Gamepad support
         let gamepadConnected = false;
         let gamepadIndex = -1;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            disableCache();
-            loadSettings();
-            updateDisplay();
-            initGamepad();
-            requestLandscape();
-        });
 
         // Disable cache function
         function disableCache() {
@@ -1086,6 +1107,14 @@ function updateDisplay() {
         matchStatusElement.classList.add('hidden');
         mainContainer.classList.remove('controls-disabled');
     }
+
+    if (broadcastChannel) {
+    broadcastChannel.postMessage({
+        type: 'update',
+        gameState: { ...gameState },  // Copia del estado
+        settings: { ...settings }
+    });
+}
 }
 
 
@@ -1101,6 +1130,14 @@ function updateDisplay() {
         }
 
         function startTimer() {
+                const urlParams = new URLSearchParams(window.location.search);
+    const isDisplayMode = urlParams.get('mode') === 'display';
+    if (isDisplayMode) {
+        console.log('startTimer bloqueado en modo display');  // Depuración
+        return;  // No inicia localmente
+    }
+    
+    if (gameState.timeRemaining <= 0 || gameState.isMatchEnded) return;
             if (gameState.timeRemaining <= 0 || gameState.isMatchEnded) return;
             
             gameState.isTimerRunning = true;
@@ -1123,14 +1160,22 @@ function updateDisplay() {
         }
 
         function pauseTimer() {
-            gameState.isTimerRunning = false;
-            if (gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-                gameState.timerInterval = null;
-            }
-            updateDisplay();
-        }
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDisplayMode = urlParams.get('mode') === 'display';
+    if (isDisplayMode && gameState.isTimerRunning) {
+        console.log('pauseTimer forzado en modo display via sync');  // Depuración
+        // Permite pausar solo si sync lo requiere (no bloquea completamente)
+    } else if (isDisplayMode) {
+        return;  // No pausa si no está corriendo
+    }
+    
+    gameState.isTimerRunning = false;
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+    updateDisplay();
+}
         function changePoints(competitor, change) {
             if (gameState.isMatchEnded) return;
             
@@ -1521,6 +1566,141 @@ function updateDisplay() {
 
         // Update gamepad status on page load
         updateGamepadStatus();
+
+        // Chequeo inicial para modo display (oculta controles permanentemente)
+// Chequeo inicial para modo display (oculta controles permanentemente)
+function initDisplayMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDisplayMode = urlParams.get('mode') === 'display';
+    
+    if (isDisplayMode) {
+        console.log('Modo Display activado: Ocultando controles y toolbar');
+        document.getElementById('mainContainer').classList.add('display-mode');
+        gameState.controlsVisible = false;  // Desactiva toggle de visibilidad
+        document.getElementById('mainContainer').classList.add('controls-hidden');  // Oculta controles
+        
+        // Bloquea clics en timer (remueve onclick y asegura no interactivo)
+        const timerElement = document.getElementById('timer');
+        timerElement.onclick = null;  // Remueve event listener
+        timerElement.style.pointerEvents = 'none';  // Bloqueo extra
+        console.log('Timer bloqueado en modo display');
+        
+        // Oculta botón de display (no se necesita en externa)
+        const displayBtn = document.querySelector('.toolbar-icon[title="Abrir en Pantalla Externa"]');
+        if (displayBtn) displayBtn.style.display = 'none';
+        
+        // Opcional: Auto-fullscreen en modo display
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log('Auto-fullscreen failed in display mode:', err);
+            });
+        }
+        
+        // Escucha sync desde ventana principal (con sync forzado del timer)
+        if (broadcastChannel) {
+            let lastTimerRunning = gameState.isTimerRunning;  // Track para detectar cambios
+            
+            broadcastChannel.addEventListener('message', (event) => {
+                if (event.data.type === 'update') {
+                    // Actualiza gameState y settings desde mensaje
+                    Object.assign(gameState, event.data.gameState);
+                    Object.assign(settings, event.data.settings);
+                    
+                    // Sync forzado del timer: Si cambió isTimerRunning, actúa localmente
+                    if (gameState.isTimerRunning !== lastTimerRunning) {
+                        if (!gameState.isTimerRunning) {
+                            console.log('Sync: Pausando timer local en display (de principal)');  // Depuración
+                            pauseTimer();  // Detiene interval local si corriendo
+                        } else {
+                            console.log('Sync: Iniciando timer local en display (de principal)');  // Depuración
+                            startTimer();  // Inicia si principal lo hizo (raro, pero sync completo)
+                        }
+                        lastTimerRunning = gameState.isTimerRunning;
+                    }
+                    
+                    updateDisplay();  // Refresca UI
+                }
+            });
+            console.log('Escuchando sync en modo display (con timer sync)');
+        }
+    } else {
+        console.log('Modo Control (laptop): Controles visibles');
+    }
+}
+
+// Función para abrir ventana en pantalla externa
+function openExternalDisplay() {
+    if (confirm('¿Abrir visualización en pantalla externa? Se abrirá una ventana nueva.')) {
+        let externalWindow;
+        let leftPos = 0;
+        let topPos = 0;
+        let width = screen.availWidth;
+        let height = screen.availHeight;
+        
+        // Detección simple de segunda pantalla (asumiendo a la derecha, común en HDMI)
+        // Si screen.availLeft > 0, hay una pantalla izquierda; ajusta según tu setup
+        if (screen.availLeft > 0) {
+            // Segunda pantalla a la izquierda
+            leftPos = screen.availLeft - width;
+        } else if (screen.width > screen.availWidth) {
+            // Detecta si hay espacio a la derecha (barras de tareas, etc.)
+            leftPos = screen.width;
+        } else {
+            // Fallback: Centrado en pantalla principal (para testing sin HDMI)
+            leftPos = (screen.width - 1024) / 2;
+            topPos = (screen.height - 768) / 2;
+            width = 1024;
+            height = 768;
+            console.log('Solo una pantalla detectada: Abriendo centrado');
+        }
+        
+        // URL con modo display
+        const displayUrl = window.location.href.split('?')[0] + '?mode=display';  // Limpia params y agrega mode=display
+        
+        // Abre ventana (features: maximizada, sin toolbar/menús para look limpio)
+        externalWindow = window.open(
+            displayUrl,
+            'taekwondo-display',
+            `width=${width},height=${height},left=${leftPos},top=${topPos},fullscreen=yes,scrollbars=no,toolbar=no,menubar=no,resizable=yes`
+        );
+        
+        if (externalWindow) {
+            console.log(`Ventana externa abierta en posición: left=${leftPos}, top=${topPos}`);
+            
+            // Envía estado inicial via broadcast
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({
+                    type: 'update',
+                    gameState: { ...gameState },
+                    settings: { ...settings }
+                });
+            }
+            
+            // Verifica si se cargó (evita pop-up blockers)
+            setTimeout(() => {
+                if (externalWindow.closed) {
+                    alert('Ventana bloqueada por pop-up blocker. Habilita pop-ups para este sitio y reintenta.');
+                }
+            }, 1000);
+        } else {
+            alert('No se pudo abrir la ventana. Verifica pop-up blockers o permisos del navegador.');
+        }
+    }
+}
+
+// Inicializa modo display al cargar (después de DOMContentLoaded)
+document.addEventListener('DOMContentLoaded', function() {
+    disableCache();
+    loadSettings();
+    updateDisplay();
+    initGamepad();
+    requestLandscape();
+    
+    // Nuevo: Inicializa modo display después de lo anterior (pequeño delay para DOM)
+    setTimeout(initDisplayMode, 100);
+});
+
+
     </script>
 </body>
 </html>
