@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Marcación de Taekwondo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .round-indicator {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer-container {
+            position: relative;
+        }
+
+        .timer {
+            background: #ddd;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 72px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .timer.active {
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .wins-display {
+            background: #FFD700;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wins-red {
+            color: #FF0000;
+        }
+
+        .wins-blue {
+            color: #0066FF;
+        }
+
+        .wins-separator {
+            color: #333;
+        }
+
+        .scoring-area {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .competitor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .competitor-label {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .red-label {
+            color: #FF0000;
+        }
+
+        .blue-label {
+            color: #0066FF;
+        }
+
+        .score-box {
+            width: 100%;
+            height: 300px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 180px;
+            font-weight: bold;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .red-box {
+            background: #FF3333;
+        }
+
+        .blue-box {
+            background: #3366FF;
+        }
+
+        .penalty-bar {
+            width: 100%;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .penalty-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        .penalty-fill.red {
+            background: #FF3333;
+        }
+
+        .penalty-fill.blue {
+            background: #3366FF;
+        }
+
+        .competitor-total {
+            background: #ddd;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .controls-area {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 16px;
+            font-weight: bold;
+            width: 80px;
+            text-align: center;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: #666;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #444;
+        }
+
+        .control-value {
+            width: 80px;
+            text-align: center;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            background: white;
+        }
+
+        .bottom-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .left-icons, .right-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .toolbar-icon {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: #666;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+
+        .toolbar-icon:hover {
+            background: #444;
+        }
+
+        .toolbar-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background: #666;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #444;
+        }
+
+        .visibility-toggle {
+            background: #4CAF50 !important;
+        }
+
+        .visibility-toggle.hidden {
+            background: #f44336 !important;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-btn.red {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-btn.blue {
+            background: #007bff;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Settings Modal */
+        .settings-modal {
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .settings-modal .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+
+        .settings-label {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .settings-input {
+            width: 80px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .settings-checkbox {
+            transform: scale(1.2);
+        }
+
+        .gamepad-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .gamepad-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .gamepad-controls {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .mapping-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .mapping-row:last-child {
+            border-bottom: none;
+        }
+
+        .button-name {
+            font-weight: bold;
+            color: #007bff;
+            min-width: 80px;
+            font-size: 14px;
+        }
+
+        .button-action {
+            color: #495057;
+            text-align: right;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .control-mapping {
+            background: white;
+            border-radius: 5px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+                height: 100vh;
+            }
+
+            .top-section {
+                flex-direction: column;
+                gap: 15px;
+                margin-bottom: 20px;
+                align-items: center;
+            }
+
+            .round-indicator {
+                font-size: 24px;
+                order: 1;
+            }
+
+            .timer-container {
+                order: 2;
+            }
+
+            .timer {
+                font-size: 48px;
+                padding: 15px 25px;
+            }
+
+            .wins-display {
+                font-size: 24px;
+                padding: 10px 15px;
+                order: 3;
+            }
+
+            .scoring-area {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .competitor {
+                width: 100%;
+            }
+
+            .competitor-label {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .score-box {
+                height: 120px;
+                font-size: 80px;
+            }
+
+            .penalty-bar {
+                height: 15px;
+                margin-bottom: 10px;
+            }
+
+            .competitor-total {
+                font-size: 18px;
+                padding: 8px 15px;
+            }
+
+            .controls-area {
+                margin: 20px 0;
+                gap: 20px;
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .control-section {
+                gap: 10px;
+            }
+
+            .control-row {
+                gap: 8px;
+            }
+
+            .control-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+
+            .control-value {
+                width: 60px;
+                font-size: 14px;
+                padding: 6px;
+            }
+
+            .control-label {
+                font-size: 14px;
+                width: 60px;
+            }
+
+            .bottom-toolbar {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .left-icons, .right-icons {
+                gap: 10px;
+            }
+
+            .toolbar-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .toolbar-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .modal-content {
+                margin: 10px;
+                padding: 20px;
+                max-width: 95%;
+                max-height: 85vh;
+            }
+
+            .settings-modal .modal-content {
+                padding: 15px;
+            }
+
+            .modal-title {
+                font-size: 20px;
+            }
+
+            .modal-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .settings-section {
+                margin-bottom: 20px;
+            }
+
+            .settings-title {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+
+            .settings-label {
+                font-size: 14px;
+            }
+
+            .settings-input {
+                width: 100%;
+                max-width: 120px;
+            }
+
+            .gamepad-controls {
+                padding: 10px;
+            }
+
+            .mapping-row {
+                padding: 6px 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .button-name {
+                min-width: auto;
+                font-size: 13px;
+            }
+
+            .button-action {
+                font-size: 13px;
+                text-align: left;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .main-container {
+                padding: 5px;
+            }
+
+            .timer {
+                font-size: 36px;
+                padding: 10px 20px;
+            }
+
+            .score-box {
+                height: 100px;
+                font-size: 60px;
+            }
+
+            .controls-area {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .control-section {
+                width: 100%;
+            }
+
+            .wins-display {
+                font-size: 20px;
+                padding: 8px 12px;
+            }
+
+            .round-indicator {
+                font-size: 20px;
+            }
+
+            .competitor-label {
+                font-size: 20px;
+            }
+
+            .modal-buttons {
+                margin-top: 15px;
+            }
+
+            .bottom-toolbar {
+                justify-content: center;
+            }
+
+            .left-icons {
+                order: 2;
+            }
+
+            .center-icon {
+                order: 1;
+            }
+
+            .right-icons {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            .main-container {
+                padding: 5px;
+            }
+
+            .top-section {
+                flex-direction: row;
+                margin-bottom: 10px;
+            }
+
+            .timer {
+                font-size: 32px;
+                padding: 8px 16px;
+            }
+
+            .score-box {
+                height: 80px;
+                font-size: 50px;
+            }
+
+            .scoring-area {
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            .controls-area {
+                margin: 10px 0;
+                gap: 15px;
+            }
+
+            .competitor-label {
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+
+            .wins-display {
+                font-size: 18px;
+                padding: 6px 10px;
+            }
+
+            .round-indicator {
+                font-size: 18px;
+            }
+
+            .bottom-toolbar {
+                margin-top: 5px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .controls-hidden .controls-area {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container" id="mainContainer">
+        <div class="top-section">
+            <div class="round-indicator">ROUND <span id="currentRound">1</span></div>
+            <div class="timer-container">
+                <div class="timer" id="timer" onclick="toggleTimer()">2:00</div>
+            </div>
+            <div class="wins-display" id="winsDisplay">
+                <span class="wins-red" id="redWins">0</span>
+                <span class="wins-separator">-</span>
+                <span class="wins-blue" id="blueWins">0</span>
+            </div>
+        </div>
+
+        <div class="scoring-area">
+            <div class="competitor">
+                <div class="competitor-label red-label">RED</div>
+                <div class="score-box red-box" id="redScore">0</div>
+                <div class="penalty-bar">
+                    <div class="penalty-fill red" id="redPenaltyBar"></div>
+                </div>
+                <div class="competitor-total" id="redTotal">0</div>
+            </div>
+
+            <div class="controls-area" id="controlsArea">
+                <div class="control-section">
+                    <div class="control-row">
+                        <div class="control-label">PUNTOS</div>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn" onclick="changePoints('red', -1)">−</button>
+                        <input type="text" class="control-value" id="redPoints" value="1" readonly>
+                        <button class="control-btn" onclick="changePoints('red', 1)">+</button>
+                    </div>
+                    <div class="control-row">
+                        <div class="control-label">PENALTY</div>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn" onclick="changePenalties('red', -1)">−</button>
+                        <input type="text" class="control-value" id="redPenalties" value="1" readonly>
+                        <button class="control-btn" onclick="changePenalties('red', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="control-row">
+                        <div class="control-label">PUNTOS</div>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn" onclick="changePoints('blue', -1)">−</button>
+                        <input type="text" class="control-value" id="bluePoints" value="1" readonly>
+                        <button class="control-btn" onclick="changePoints('blue', 1)">+</button>
+                    </div>
+                    <div class="control-row">
+                        <div class="control-label">PENALTY</div>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn" onclick="changePenalties('blue', -1)">−</button>
+                        <input type="text" class="control-value" id="bluePenalties" value="1" readonly>
+                        <button class="control-btn" onclick="changePenalties('blue', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="competitor">
+                <div class="competitor-label blue-label">BLUE</div>
+                <div class="score-box blue-box" id="blueScore">0</div>
+                <div class="penalty-bar">
+                    <div class="penalty-fill blue" id="bluePenaltyBar"></div>
+                </div>
+                <div class="competitor-total" id="blueTotal">0</div>
+            </div>
+        </div>
+
+        <div class="bottom-toolbar">
+            <div class="left-icons">
+                <button class="toolbar-icon" onclick="showHelp()" title="Ayuda">?</button>
+                <button class="toolbar-icon" onclick="showSettings()" title="Configuración">⚙</button>
+                <button class="toolbar-icon" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+            </div>
+            <div class="center-icon">
+                <button class="toolbar-icon visibility-toggle" id="visibilityToggle" onclick="toggleControlsVisibility()" title="Ocultar/Mostrar controles">📝</button>
+            </div>
+            <div class="right-icons">
+                <button class="toolbar-btn" onclick="endMatch()">End Match</button>
+                <button class="toolbar-btn" onclick="showDebug()">Debug</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="timeWinModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-title">Seleccionar ganador — Victoria por tiempo</div>
+            <div class="modal-buttons">
+                <button class="modal-btn red" onclick="confirmTimeWin('red')">RED</button>
+                <button class="modal-btn blue" onclick="confirmTimeWin('blue')">BLUE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="penaltyWinModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-title">Seleccionar ganador — Victoria por descalificación por penalizaciones</div>
+            <div class="modal-buttons">
+                <button class="modal-btn red" id="penaltyWinRed" onclick="confirmPenaltyWin('red')">RED</button>
+                <button class="modal-btn blue" id="penaltyWinBlue" onclick="confirmPenaltyWin('blue')">BLUE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="roundEndModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-title" id="roundEndTitle">¿Confirmar victoria de RED en el round?</div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeModal('roundEndModal')">Cancelar</button>
+                <button class="modal-btn primary" onclick="confirmRoundEnd()">Confirmar y terminar round</button>
+                <button class="modal-btn primary" onclick="confirmMatchEnd()">Confirmar y terminar pelea</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content settings-modal">
+            <div class="modal-title">CONFIGURACIÓN</div>
+            
+            <div class="settings-section">
+                <div class="settings-title">JUECES</div>
+                <div class="settings-row">
+                    <span class="settings-label">Tiempo por round (segundos)</span>
+                    <input type="number" class="settings-input" id="roundTime" value="120">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Rounds para ganar</span>
+                    <input type="number" class="settings-input" id="roundsToWin" value="2">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Límite de penalizaciones</span>
+                    <input type="number" class="settings-input" id="penaltyLimit" value="5">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">PANTALLA</div>
+                <div class="settings-row">
+                    <span class="settings-label">Restablecer puntuación entre rounds</span>
+                    <input type="checkbox" class="settings-checkbox" id="resetScoreBetweenRounds" checked>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Restablecer penalizaciones entre rounds</span>
+                    <input type="checkbox" class="settings-checkbox" id="resetPenaltiesBetweenRounds" checked>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Seguir ganadores de round</span>
+                    <input type="checkbox" class="settings-checkbox" id="trackRoundWinners" checked>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">CONTROL DE XBOX</div>
+                <div class="settings-row">
+                    <span class="settings-label">Habilitar control de Xbox</span>
+                    <input type="checkbox" class="settings-checkbox" id="enableGamepad">
+                </div>
+                <div id="gamepadStatus" class="gamepad-status gamepad-disconnected">
+                    No se detectó control de Xbox
+                </div>
+                
+                <div id="gamepadControls" class="gamepad-controls" style="margin-top: 15px; display: none;">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333;">Controles Mapeados:</div>
+                    <div class="control-mapping">
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 A</span>
+                            <span class="button-action">+1 Punto ROJO</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 B</span>
+                            <span class="button-action">+1 Punto AZUL</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 X</span>
+                            <span class="button-action">+1 Penalización ROJO</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 Y</span>
+                            <span class="button-action">+1 Penalización AZUL</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 LB</span>
+                            <span class="button-action">-1 Punto ROJO</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 RB</span>
+                            <span class="button-action">-1 Punto AZUL</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 View</span>
+                            <span class="button-action">Iniciar/Pausar Cronómetro</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 Menu</span>
+                            <span class="button-action">Ocultar/Mostrar Controles</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 ⬆️</span>
+                            <span class="button-action">Reiniciar Cronómetro</span>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="button-name">🎮 ⬇️</span>
+                            <span class="button-action">Terminar Pelea</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 14px;">
+                        <strong>Nota:</strong> Para conectar tu control de Xbox:
+                        <ol style="margin: 5px 0 0 20px;">
+                            <li>Conecta el control por USB o Bluetooth</li>
+                            <li>Presiona cualquier botón en el navegador</li>
+                            <li>El estado cambiará automáticamente cuando se detecte</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="position: sticky; bottom: 0; background: white; padding-top: 15px; border-top: 1px solid #dee2e6; margin-top: 20px;">
+                <button class="modal-btn secondary" onclick="closeModal('settingsModal')">Cancelar</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Guardar y iniciar nueva pelea</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            currentRound: 1,
+            redScore: 0,
+            blueScore: 0,
+            redPenalties: 0,
+            bluePenalties: 0,
+            redWins: 0,
+            blueWins: 0,
+            timeRemaining: 120,
+            isTimerRunning: false,
+            timerInterval: null,
+            controlsVisible: true
+        };
+
+        // Settings
+        let settings = {
+            roundTime: 120,
+            roundsToWin: 2,
+            penaltyLimit: 5,
+            resetScoreBetweenRounds: true,
+            resetPenaltiesBetweenRounds: true,
+            trackRoundWinners: true,
+            enableGamepad: false
+        };
+
+        // Gamepad support
+        let gamepadConnected = false;
+        let gamepadIndex = -1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            updateDisplay();
+            initGamepad();
+        });
+
+        function loadSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem('taekwondoSettings') || '{}');
+            settings = { ...settings, ...savedSettings };
+            gameState.timeRemaining = settings.roundTime;
+            updateSettingsForm();
+        }
+
+        function saveSettings() {
+            // Get values from form
+            settings.roundTime = parseInt(document.getElementById('roundTime').value);
+            settings.roundsToWin = parseInt(document.getElementById('roundsToWin').value);
+            settings.penaltyLimit = parseInt(document.getElementById('penaltyLimit').value);
+            settings.resetScoreBetweenRounds = document.getElementById('resetScoreBetweenRounds').checked;
+            settings.resetPenaltiesBetweenRounds = document.getElementById('resetPenaltiesBetweenRounds').checked;
+            settings.trackRoundWinners = document.getElementById('trackRoundWinners').checked;
+            settings.enableGamepad = document.getElementById('enableGamepad').checked;
+
+            // Save to localStorage
+            localStorage.setItem('taekwondoSettings', JSON.stringify(settings));
+
+            // Reset match
+            resetMatch();
+            closeModal('settingsModal');
+        }
+
+        function updateSettingsForm() {
+            document.getElementById('roundTime').value = settings.roundTime;
+            document.getElementById('roundsToWin').value = settings.roundsToWin;
+            document.getElementById('penaltyLimit').value = settings.penaltyLimit;
+            document.getElementById('resetScoreBetweenRounds').checked = settings.resetScoreBetweenRounds;
+            document.getElementById('resetPenaltiesBetweenRounds').checked = settings.resetPenaltiesBetweenRounds;
+            document.getElementById('trackRoundWinners').checked = settings.trackRoundWinners;
+            document.getElementById('enableGamepad').checked = settings.enableGamepad;
+        }
+
+        function resetMatch() {
+            gameState = {
+                currentRound: 1,
+                redScore: 0,
+                blueScore: 0,
+                redPenalties: 0,
+                bluePenalties: 0,
+                redWins: 0,
+                blueWins: 0,
+                timeRemaining: settings.roundTime,
+                isTimerRunning: false,
+                timerInterval: null,
+                controlsVisible: true
+            };
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            // Update scores
+            document.getElementById('redScore').textContent = gameState.redScore;
+            document.getElementById('blueScore').textContent = gameState.blueScore;
+            document.getElementById('redTotal').textContent = gameState.redScore;
+            document.getElementById('blueTotal').textContent = gameState.blueScore;
+
+            // Update points/penalties controls
+            document.getElementById('redPoints').value = gameState.redScore;
+            document.getElementById('bluePoints').value = gameState.blueScore;
+            document.getElementById('redPenalties').value = gameState.redPenalties;
+            document.getElementById('bluePenalties').value = gameState.bluePenalties;
+
+            // Update penalty bars
+            const redPenaltyPercent = (gameState.redPenalties / settings.penaltyLimit) * 100;
+            const bluePenaltyPercent = (gameState.bluePenalties / settings.penaltyLimit) * 100;
+            document.getElementById('redPenaltyBar').style.width = redPenaltyPercent + '%';
+            document.getElementById('bluePenaltyBar').style.width = bluePenaltyPercent + '%';
+
+            // Update timer
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Update round and wins
+            document.getElementById('currentRound').textContent = gameState.currentRound;
+            document.getElementById('redWins').textContent = gameState.redWins;
+            document.getElementById('blueWins').textContent = gameState.blueWins;
+
+            // Update timer appearance
+            const timerElement = document.getElementById('timer');
+            if (gameState.isTimerRunning) {
+                timerElement.classList.add('active');
+            } else {
+                timerElement.classList.remove('active');
+            }
+        }
+
+        function toggleTimer() {
+            if (gameState.isTimerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (gameState.timeRemaining <= 0) return;
+            
+            gameState.isTimerRunning = true;
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateDisplay();
+                
+                if (gameState.timeRemaining <= 0) {
+                    pauseTimer();
+                    showTimeWinModal();
+                }
+            }, 1000);
+            updateDisplay();
+        }
+
+        function pauseTimer() {
+            gameState.isTimerRunning = false;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            updateDisplay();
+        }
+
+        function changePoints(competitor, change) {
+            if (competitor === 'red') {
+                gameState.redScore = Math.max(0, gameState.redScore + change);
+            } else {
+                gameState.blueScore = Math.max(0, gameState.blueScore + change);
+            }
+            updateDisplay();
+        }
+
+        function changePenalties(competitor, change) {
+            if (competitor === 'red') {
+                gameState.redPenalties = Math.max(0, gameState.redPenalties + change);
+                if (gameState.redPenalties >= settings.penaltyLimit) {
+                    showPenaltyWinModal('blue');
+                }
+            } else {
+                gameState.bluePenalties = Math.max(0, gameState.bluePenalties + change);
+                if (gameState.bluePenalties >= settings.penaltyLimit) {
+                    showPenaltyWinModal('red');
+                }
+            }
+            updateDisplay();
+        }
+
+        function showTimeWinModal() {
+            document.getElementById('timeWinModal').classList.remove('hidden');
+        }
+
+        function confirmTimeWin(winner) {
+            if (winner === 'red') {
+                gameState.redWins++;
+            } else {
+                gameState.blueWins++;
+            }
+            
+            closeModal('timeWinModal');
+            
+            if (checkMatchWinner()) {
+                showMatchEndModal(winner);
+            } else {
+                startNewRound();
+            }
+            updateDisplay();
+        }
+
+        function showPenaltyWinModal(winner) {
+            document.getElementById('penaltyWinModal').classList.remove('hidden');
+        }
+
+        function confirmPenaltyWin(winner) {
+            if (winner === 'red') {
+                gameState.redWins++;
+            } else {
+                gameState.blueWins++;
+            }
+            
+            closeModal('penaltyWinModal');
+            
+            if (checkMatchWinner()) {
+                showMatchEndModal(winner);
+            } else {
+                startNewRound();
+            }
+            updateDisplay();
+        }
+
+        function checkMatchWinner() {
+            return gameState.redWins >= settings.roundsToWin || gameState.blueWins >= settings.roundsToWin;
+        }
+
+        function startNewRound() {
+            gameState.currentRound++;
+            gameState.timeRemaining = settings.roundTime;
+            
+            if (settings.resetScoreBetweenRounds) {
+                gameState.redScore = 0;
+                gameState.blueScore = 0;
+            }
+            
+            if (settings.resetPenaltiesBetweenRounds) {
+                gameState.redPenalties = 0;
+                gameState.bluePenalties = 0;
+            }
+            
+            pauseTimer();
+            updateDisplay();
+        }
+
+        function showMatchEndModal(winner) {
+            const modal = document.getElementById('roundEndModal');
+            const title = document.getElementById('roundEndTitle');
+            title.textContent = `¿Confirmar victoria de ${winner.toUpperCase()} en la pelea?`;
+            modal.classList.remove('hidden');
+        }
+
+        function confirmRoundEnd() {
+            startNewRound();
+            closeModal('roundEndModal');
+        }
+
+        function confirmMatchEnd() {
+            alert('¡Pelea terminada!');
+            resetMatch();
+            closeModal('roundEndModal');
+        }
+
+        function toggleControlsVisibility() {
+            gameState.controlsVisible = !gameState.controlsVisible;
+            const mainContainer = document.getElementById('mainContainer');
+            const visibilityToggle = document.getElementById('visibilityToggle');
+            
+            if (gameState.controlsVisible) {
+                mainContainer.classList.remove('controls-hidden');
+                visibilityToggle.classList.remove('hidden');
+                visibilityToggle.classList.add('visibility-toggle');
+            } else {
+                mainContainer.classList.add('controls-hidden');
+                visibilityToggle.classList.add('hidden');
+                visibilityToggle.classList.remove('visibility-toggle');
+            }
+        }
+
+        function showSettings() {
+            updateSettingsForm();
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function showHelp() {
+            alert('Sistema de Marcación de Taekwondo\n\n' +
+                  '• Clic en el cronómetro para iniciar/pausar\n' +
+                  '• Use los botones + y - para puntos y penalizaciones\n' +
+                  '• 5 penalizaciones = descalificación\n' +
+                  '• Configure el sistema con el botón de configuración\n' +
+                  '• Use el ícono central para ocultar controles');
+        }
+
+        function showDebug() {
+            console.log('Game State:', gameState);
+            console.log('Settings:', settings);
+            alert('Información de depuración enviada a la consola');
+        }
+
+        function endMatch() {
+            if (confirm('¿Está seguro de que desea terminar la pelea?')) {
+                resetMatch();
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Error activando pantalla completa:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Gamepad Support
+        function initGamepad() {
+            window.addEventListener('gamepadconnected', (e) => {
+                gamepadConnected = true;
+                gamepadIndex = e.gamepad.index;
+                updateGamepadStatus();
+                console.log('Control conectado:', e.gamepad.id);
+            });
+
+            window.addEventListener('gamepaddisconnected', (e) => {
+                if (e.gamepad.index === gamepadIndex) {
+                    gamepadConnected = false;
+                    gamepadIndex = -1;
+                    updateGamepadStatus();
+                    console.log('Control desconectado');
+                }
+            });
+
+            if (settings.enableGamepad) {
+                pollGamepad();
+            }
+        }
+
+        function updateGamepadStatus() {
+            const statusElement = document.getElementById('gamepadStatus');
+            const controlsElement = document.getElementById('gamepadControls');
+            const enableCheckbox = document.getElementById('enableGamepad');
+            
+            if (gamepadConnected) {
+                const gamepads = navigator.getGamepads();
+                const gamepad = gamepads[gamepadIndex];
+                const gamepadName = gamepad ? gamepad.id : 'Control desconocido';
+                
+                statusElement.textContent = `✅ ${gamepadName} conectado`;
+                statusElement.className = 'gamepad-status gamepad-connected';
+                
+                // Show controls mapping if gamepad is enabled or connected
+                if (enableCheckbox && enableCheckbox.checked) {
+                    controlsElement.style.display = 'block';
+                }
+            } else {
+                statusElement.textContent = '❌ No se detectó control de Xbox';
+                statusElement.className = 'gamepad-status gamepad-disconnected';
+                controlsElement.style.display = 'none';
+            }
+        }
+
+        function updateSettingsForm() {
+            document.getElementById('roundTime').value = settings.roundTime;
+            document.getElementById('roundsToWin').value = settings.roundsToWin;
+            document.getElementById('penaltyLimit').value = settings.penaltyLimit;
+            document.getElementById('resetScoreBetweenRounds').checked = settings.resetScoreBetweenRounds;
+            document.getElementById('resetPenaltiesBetweenRounds').checked = settings.resetPenaltiesBetweenRounds;
+            document.getElementById('trackRoundWinners').checked = settings.trackRoundWinners;
+            document.getElementById('enableGamepad').checked = settings.enableGamepad;
+            
+            // Update gamepad controls visibility
+            const controlsElement = document.getElementById('gamepadControls');
+            const enableCheckbox = document.getElementById('enableGamepad');
+            if (enableCheckbox && enableCheckbox.checked && gamepadConnected) {
+                controlsElement.style.display = 'block';
+            }
+        }
+
+        let lastButtonStates = {};
+
+        function pollGamepad() {
+            if (!settings.enableGamepad) return;
+
+            const gamepads = navigator.getGamepads();
+            if (gamepadConnected && gamepads[gamepadIndex]) {
+                const gamepad = gamepads[gamepadIndex];
+                
+                // Button mapping for Xbox controller
+                const buttons = {
+                    A: 0,           // A button - Red +1 point
+                    B: 1,           // B button - Blue +1 point
+                    X: 2,           // X button - Red penalty
+                    Y: 3,           // Y button - Blue penalty
+                    LB: 4,          // Left bumper - Red -1 point
+                    RB: 5,          // Right bumper - Blue -1 point
+                    VIEW: 8,        // View button - Toggle timer
+                    MENU: 9,        // Menu button - Toggle controls visibility
+                    DPAD_UP: 12,    // D-pad up - Reset timer
+                    DPAD_DOWN: 13,  // D-pad down - End match
+                    DPAD_LEFT: 14,  // D-pad left - Previous round
+                    DPAD_RIGHT: 15  // D-pad right - Next round
+                };
+
+                // Check each button
+                for (const [buttonName, buttonIndex] of Object.entries(buttons)) {
+                    if (gamepad.buttons[buttonIndex]) {
+                        const isPressed = gamepad.buttons[buttonIndex].pressed;
+                        const wasPressed = lastButtonStates[buttonName] || false;
+                        
+                        // Only act on button press (not hold)
+                        if (isPressed && !wasPressed) {
+                            handleGamepadButton(buttonName);
+                        }
+                        
+                        lastButtonStates[buttonName] = isPressed;
+                    }
+                }
+            }
+            
+            // Continue polling
+            requestAnimationFrame(pollGamepad);
+        }
+
+        function handleGamepadButton(buttonName) {
+            switch (buttonName) {
+                case 'A':
+                    changePoints('red', 1);
+                    break;
+                case 'B':
+                    changePoints('blue', 1);
+                    break;
+                case 'X':
+                    changePenalties('red', 1);
+                    break;
+                case 'Y':
+                    changePenalties('blue', 1);
+                    break;
+                case 'LB':
+                    changePoints('red', -1);
+                    break;
+                case 'RB':
+                    changePoints('blue', -1);
+                    break;
+                case 'VIEW':
+                    toggleTimer();
+                    break;
+                case 'MENU':
+                    toggleControlsVisibility();
+                    break;
+                case 'DPAD_UP':
+                    gameState.timeRemaining = settings.roundTime;
+                    pauseTimer(); // Stop timer when resetting
+                    updateDisplay();
+                    break;
+                case 'DPAD_DOWN':
+                    endMatch();
+                    break;
+            }
+        }
+
+        // Start gamepad polling if enabled
+        if (settings.enableGamepad) {
+            pollGamepad();
+        }
+
+        // Handle settings changes
+        document.getElementById('enableGamepad').addEventListener('change', function(e) {
+            const controlsElement = document.getElementById('gamepadControls');
+            if (e.target.checked) {
+                if (gamepadConnected) {
+                    controlsElement.style.display = 'block';
+                }
+                pollGamepad();
+            } else {
+                controlsElement.style.display = 'none';
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Prevent default behavior for game keys
+            const gameKeys = ['Space', 'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyA', 'KeyS', 'KeyD', 'KeyF'];
+            if (gameKeys.includes(e.code)) {
+                e.preventDefault();
+            }
+
+            switch (e.code) {
+                case 'Space':
+                    toggleTimer();
+                    break;
+                case 'KeyQ':
+                    changePoints('red', 1);
+                    break;
+                case 'KeyW':
+                    changePoints('red', -1);
+                    break;
+                case 'KeyE':
+                    changePenalties('red', 1);
+                    break;
+                case 'KeyR':
+                    changePenalties('red', -1);
+                    break;
+                case 'KeyA':
+                    changePoints('blue', 1);
+                    break;
+                case 'KeyS':
+                    changePoints('blue', -1);
+                    break;
+                case 'KeyD':
+                    changePenalties('blue', 1);
+                    break;
+                case 'KeyF':
+                    changePenalties('blue', -1);
+                    break;
+                case 'KeyH':
+                    toggleControlsVisibility();
+                    break;
+                case 'KeyT':
+                    // Reset timer (T key)
+                    gameState.timeRemaining = settings.roundTime;
+                    pauseTimer();
+                    updateDisplay();
+                    break;
+                case 'F11':
+                    e.preventDefault();
+                    toggleFullscreen();
+                    break;
+                case 'Escape':
+                    // Close any open modal
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.add('hidden');
+                    });
+                    break;
+            }
+        });
+
+        // Auto-save game state periodically
+        setInterval(() => {
+            localStorage.setItem('taekwondoGameState', JSON.stringify(gameState));
+        }, 5000);
+
+        // Load saved game state on startup
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedState = JSON.parse(localStorage.getItem('taekwondoGameState') || '{}');
+            if (Object.keys(savedState).length > 0) {
+                gameState = { ...gameState, ...savedState };
+                // Don't restore timer state
+                gameState.isTimerRunning = false;
+                gameState.timerInterval = null;
+                updateDisplay();
+            }
+        });
+
+        // Prevent accidental page refresh
+        window.addEventListener('beforeunload', function(e) {
+            if (gameState.redScore > 0 || gameState.blueScore > 0 || 
+                gameState.redPenalties > 0 || gameState.bluePenalties > 0) {
+                e.preventDefault();
+                e.returnValue = '¿Está seguro de que desea salir? Se perderá el progreso actual.';
+                return e.returnValue;
+            }
+        });
+
+        // Update gamepad status on page load
+        updateGamepadStatus();
+    </script>
+</body>
+</html>
