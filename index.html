@@ -16,6 +16,25 @@
             background: #f0f0f0;
             height: 100vh;
             overflow: hidden;
+            /* Force landscape orientation */
+            transform-origin: center center;
+        }
+
+        /* Force landscape orientation on mobile */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            body {
+                transform: rotate(90deg);
+                width: 100vh;
+                height: 100vw;
+                overflow: auto;
+            }
+            
+            .main-container {
+                transform: rotate(-90deg);
+                transform-origin: center center;
+                width: 100vw;
+                height: 100vh;
+            }
         }
 
         .main-container {
@@ -23,6 +42,8 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .top-section {
@@ -1257,20 +1278,21 @@
         }
 
         function toggleControlsVisibility() {
-            gameState.controlsVisible = !gameState.controlsVisible;
-            const mainContainer = document.getElementById('mainContainer');
-            const visibilityToggle = document.getElementById('visibilityToggle');
-            
-            if (gameState.controlsVisible) {
-                mainContainer.classList.remove('controls-hidden');
-                visibilityToggle.classList.remove('hidden');
-                visibilityToggle.classList.add('visibility-toggle');
-            } else {
-                mainContainer.classList.add('controls-hidden');
-                visibilityToggle.classList.add('hidden');
-                visibilityToggle.classList.remove('visibility-toggle');
-            }
-        }
+    gameState.controlsVisible = !gameState.controlsVisible;
+    const mainContainer = document.getElementById('mainContainer');
+    const visibilityToggle = document.getElementById('visibilityToggle');
+    
+    if (gameState.controlsVisible) {
+        mainContainer.classList.remove('controls-hidden');
+        visibilityToggle.classList.add('visibility-toggle');
+        visibilityToggle.textContent = "📝"; // Mostrar
+    } else {
+        mainContainer.classList.add('controls-hidden');
+        visibilityToggle.classList.remove('visibility-toggle');
+        visibilityToggle.textContent = "👁️"; // Oculto
+    }
+}
+
 
         function showSettings() {
             updateSettingsForm();
