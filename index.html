@@ -652,6 +652,60 @@
     display: none !important;  /* Oculta modales en externa; úsalos solo en principal */
 }
 
+/* Nuevos estilos para indicador de validación de puntos */
+.validation-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff6b35;
+    display: none;
+}
+
+.validation-indicator.active {
+    display: block;
+}
+
+.multicontroller-status {
+    background: #e7f3ff;
+    border: 1px solid #b3d7ff;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.controller-list {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.controller-item {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 120px;
+    text-align: center;
+}
+
+.controller-item.connected {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.controller-item.active {
+    border-color: #007bff;
+    background: #cce7ff;
+}
+
     </style>
 </head>
 <body>
@@ -661,6 +715,7 @@
             <div class="timer-container">
                 <div class="match-status hidden" id="matchStatus">ROUND 1 - MATCH ENDED</div>
                 <div class="timer" id="timer" onclick="toggleTimer()">2:00</div>
+                <div class="validation-indicator" id="validationIndicator">Validando puntos...</div>
             </div>
             <div class="wins-display" id="winsDisplay">
                 <span class="wins-red" id="redWins">0</span>
@@ -820,66 +875,74 @@
             </div>
 
             <div class="settings-section">
-                <div class="settings-title">CONTROL DE XBOX</div>
+                <div class="settings-title">CONTROLES MÚLTIPLES</div>
                 <div class="settings-row">
-                    <span class="settings-label">Habilitar control de Xbox</span>
-                    <input type="checkbox" class="settings-checkbox" id="enableGamepad" checked>
+                    <span class="settings-label">Sistema de múltiples controles</span>
+                    <input type="checkbox" class="settings-checkbox" id="enableMultiController" checked>
                 </div>
-                <div id="gamepadStatus" class="gamepad-status gamepad-disconnected">
-                    No se detectó control de Xbox
+                <div class="multicontroller-status" id="multiControllerStatus">
+                    <div><strong>Estado de Controles (2-3 controles requeridos)</strong></div>
+                    <div class="controller-list" id="controllerList"></div>
                 </div>
                 
-                <div id="gamepadControls" class="gamepad-controls" style="margin-top: 15px; display: none;">
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333;">Controles Mapeados:</div>
+                <div id="gamepadControls" class="gamepad-controls" style="margin-top: 15px;">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333;">Controles Mapeados (por control):</div>
                     <div class="control-mapping">
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 A</span>
-                            <span class="button-action">+1 Punto ROJO</span>
+                        <div style="margin-bottom: 15px;">
+                            <strong>JUGADOR AZUL:</strong>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 D-Pad ↑</span>
+                                <span class="button-action">+1 Punto AZUL</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 D-Pad →</span>
+                                <span class="button-action">+2 Puntos AZUL</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 D-Pad ↓</span>
+                                <span class="button-action">+3 Puntos AZUL</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 D-Pad ←</span>
+                                <span class="button-action">+4 Puntos AZUL</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 Stick Izq (Click)</span>
+                                <span class="button-action">+5 Puntos AZUL</span>
+                            </div>
                         </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 B</span>
-                            <span class="button-action">+1 Punto AZUL</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 X</span>
-                            <span class="button-action">+1 Penalización ROJO</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 Y</span>
-                            <span class="button-action">+1 Penalización AZUL</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 LB</span>
-                            <span class="button-action">-1 Punto ROJO</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 RB</span>
-                            <span class="button-action">-1 Punto AZUL</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 View</span>
-                            <span class="button-action">Iniciar/Pausar Cronómetro</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 Menu</span>
-                            <span class="button-action">Ocultar/Mostrar Controles</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 ⬆️</span>
-                            <span class="button-action">Reiniciar Cronómetro</span>
-                        </div>
-                        <div class="mapping-row">
-                            <span class="button-name">🎮 ⬇️</span>
-                            <span class="button-action">Terminar Pelea</span>
+                        <div>
+                            <strong>JUGADOR ROJO:</strong>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 LB</span>
+                                <span class="button-action">+1 Punto ROJO</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 RB</span>
+                                <span class="button-action">+2 Puntos ROJO</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 LT</span>
+                                <span class="button-action">+3 Puntos ROJO</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 RT</span>
+                                <span class="button-action">+4 Puntos ROJO</span>
+                            </div>
+                            <div class="mapping-row">
+                                <span class="button-name">🎮 Stick Der (Click)</span>
+                                <span class="button-action">+5 Puntos ROJO</span>
+                            </div>
                         </div>
                     </div>
                     
                     <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 14px;">
-                        <strong>Nota:</strong> Para conectar tu control de Xbox:
+                        <strong>Nota:</strong> Para usar múltiples controles:
                         <ol style="margin: 5px 0 0 20px;">
-                            <li>Conecta el control por USB o Bluetooth</li>
-                            <li>Presiona cualquier botón en el navegador</li>
-                            <li>El estado cambiará automáticamente cuando se detecte</li>
+                            <li>Conecta 2-3 controles de Xbox por USB o Bluetooth</li>
+                            <li>Presiona cualquier botón en cada control para activarlos</li>
+                            <li>Las marcaciones requieren consenso de al menos 2 controles</li>
+                            <li>Delay de 2 segundos para confirmación entre jueces</li>
                         </ol>
                     </div>
                 </div>
@@ -913,26 +976,341 @@
 
         // Settings
         let settings = {
-    roundTime: 120,
-    roundsToWin: 2,
-    penaltyLimit: 5,
-    resetScoreBetweenRounds: true,
-    resetPenaltiesBetweenRounds: true,
-    trackRoundWinners: true,
-    enableGamepad: true,  // Cambiado a true para auto-habilitar; pon false si prefieres manual
-    restTime: 60
-};
+            roundTime: 120,
+            roundsToWin: 2,
+            penaltyLimit: 5,
+            resetScoreBetweenRounds: true,
+            resetPenaltiesBetweenRounds: true,
+            trackRoundWinners: true,
+            enableGamepad: true,
+            enableMultiController: true,
+            restTime: 60
+        };
 
         let broadcastChannel = null;
-if (typeof BroadcastChannel !== 'undefined') {
-    broadcastChannel = new BroadcastChannel('taekwondo-sync');
+        if (typeof BroadcastChannel !== 'undefined') {
+            broadcastChannel = new BroadcastChannel('taekwondo-sync');
+        }
+
+        // Multi-controller support
+        let connectedControllers = {};
+        let pendingActions = {};
+        let validationTimeout = null;
+        let stopPolling = false;
+        // Sistema de validación de puntos
+        function addPendingAction(controllerId, action) {
+    if (!settings.enableMultiController) {
+        executeAction(action);
+        return;
+    }
+
+    const actionKey = `${action.type}_${action.target}_${action.points}`;
+    console.log(`Control ${controllerId} envía: ${actionKey}`);
+    
+    if (!pendingActions[actionKey]) {
+        pendingActions[actionKey] = {
+            action: action,
+            controllers: [controllerId],
+            timestamp: Date.now()
+        };
+        console.log(`Nueva acción pendiente: ${actionKey}`);
+    } else {
+        if (!pendingActions[actionKey].controllers.includes(controllerId)) {
+            pendingActions[actionKey].controllers.push(controllerId);
+            console.log(`Control ${controllerId} confirma: ${actionKey} (${pendingActions[actionKey].controllers.length} confirmaciones)`);
+        }
+    }
+
+    showValidationIndicator();
+
+    if (validationTimeout) {
+        clearTimeout(validationTimeout);
+    }
+    
+    validationTimeout = setTimeout(() => {
+        validatePendingActions();
+    }, 2000);
 }
 
-        // Gamepad support
-        let gamepadConnected = false;
-        let gamepadIndex = -1;
+             function validatePendingActions() {
+         const totalConnected = Object.keys(connectedControllers).filter(id => connectedControllers[id].connected).length;
+         
+         if (settings.enableMultiController && totalConnected < 2) {
+             console.log('Multi activo pero <2 controles: Ignorando acciones pendientes');
+             pendingActions = {};
+             hideValidationIndicator();
+             return;
+         }
+         
+         const requiredConsensus = settings.enableMultiController ? 2 : 1;  // Fuerza 2 en multi, 1 en manual
+         console.log(`Total conectados: ${totalConnected}, Requerido: ${requiredConsensus}`);  // Log para debug
+         
+         for (const actionKey in pendingActions) {
+             const pending = pendingActions[actionKey];
+             
+             console.log(`Validando ${actionKey}: ${pending.controllers.length} de ${requiredConsensus} requeridos`);
+             
+             if (pending.controllers.length >= requiredConsensus) {
+                 executeAction(pending.action);
+                 console.log(`✓ Acción ejecutada: ${actionKey}`);
+             } else {
+                 console.log(`✗ Acción rechazada: ${actionKey} - insuficiente consenso`);
+             }
+         }
+         
+         // Limpiar acciones pendientes
+         pendingActions = {};
+         hideValidationIndicator();
+     }
+     
+
+        function executeAction(action) {
+            if (gameState.isMatchEnded) return;
+            
+                 console.log('Ejecutando acción:', action);  // Log para debug
+     if (action.type === 'points') {
+         console.log(`Sumando ${action.points} puntos a ${action.target}. Nuevo score: ${action.target === 'red' ? gameState.redScore + action.points : gameState.blueScore + action.points}`);
+     }
+     
+
+            switch (action.type) {
+                case 'points':
+                    if (action.target === 'red') {
+                        gameState.redScore = Math.max(0, gameState.redScore + action.points);
+                    } else {
+                        gameState.blueScore = Math.max(0, gameState.blueScore + action.points);
+                    }
+                    break;
+                case 'penalty':
+                    if (action.target === 'red') {
+                        gameState.redPenalties = Math.max(0, gameState.redPenalties + action.points);
+                        if (gameState.redPenalties >= settings.penaltyLimit) {
+                            showPenaltyWinModal('blue');
+                        }
+                    } else {
+                        gameState.bluePenalties = Math.max(0, gameState.bluePenalties + action.points);
+                        if (gameState.bluePenalties >= settings.penaltyLimit) {
+                            showPenaltyWinModal('red');
+                        }
+                    }
+                    break;
+            }
+            console.log('Display actualizado después de acción');
+            updateDisplay();
+        }
+
+        function showValidationIndicator() {
+            document.getElementById('validationIndicator').classList.add('active');
+        }
+
+        function hideValidationIndicator() {
+            document.getElementById('validationIndicator').classList.remove('active');
+        }
+
+        // Gamepad Support con mapeo específico
+        function initMultiController() {
+            window.addEventListener('gamepadconnected', (e) => {
+                const controllerId = e.gamepad.index;
+                connectedControllers[controllerId] = {
+                    connected: true,
+                    gamepad: e.gamepad,
+                    lastButtonStates: {}
+                };
+                updateControllerStatus();
+                console.log(`Control ${controllerId} conectado:`, e.gamepad.id);
+            });
+
+            window.addEventListener('gamepaddisconnected', (e) => {
+                const controllerId = e.gamepad.index;
+                if (connectedControllers[controllerId]) {
+                    connectedControllers[controllerId].connected = false;
+                    updateControllerStatus();
+                    console.log(`Control ${controllerId} desconectado`);
+                }
+            });
+
+            if (settings.enableMultiController) {
+                stopPolling = false;
+                pollMultipleGamepads();
+            }
+        }
+
+        function updateControllerStatus() {
+    const statusContainer = document.getElementById('controllerList');
+    const totalConnected = Object.keys(connectedControllers).filter(id => connectedControllers[id].connected).length;
+    
+    statusContainer.innerHTML = '';
+    
+    for (let i = 0; i < 3; i++) {
+        const controllerDiv = document.createElement('div');
+        controllerDiv.className = 'controller-item';
+        
+        const isConnected = connectedControllers[i] && connectedControllers[i].connected;
+        
+        if (isConnected) {
+            controllerDiv.classList.add('connected');
+            controllerDiv.innerHTML = `
+                <div><strong>Control ${i + 1}</strong></div>
+                <div>✓ Conectado</div>
+            `;
+        } else {
+            controllerDiv.innerHTML = `
+                <div><strong>Control ${i + 1}</strong></div>
+                <div>⚪ Desconectado</div>
+            `;
+        }
+        
+        statusContainer.appendChild(controllerDiv);
+    }
+
+    // Actualizar estado general (sin cambios)
+    const statusElement = document.getElementById('multiControllerStatus');
+    const statusText = statusElement.querySelector('div');
+    
+    if (totalConnected >= 2) {
+        statusText.innerHTML = `<strong>✓ Sistema Activo (${totalConnected}/3 controles conectados)</strong>`;
+        statusElement.style.borderColor = '#28a745';
+        statusElement.style.background = '#d4edda';
+    } else if (totalConnected === 1) {
+        statusText.innerHTML = `<strong>⚠ Necesita más controles (${totalConnected}/3 controles - mínimo 2)</strong>`;
+        statusElement.style.borderColor = '#ffc107';
+        statusElement.style.background = '#fff3cd';
+    } else {
+        statusText.innerHTML = `<strong>❌ Sin controles detectados (0/3 controles)</strong>`;
+        statusElement.style.borderColor = '#dc3545';
+        statusElement.style.background = '#f8d7da';
+    }
+}
 
 
+        function pollMultipleGamepads() {
+            if (!settings.enableMultiController) return;
+            if (stopPolling) return;
+
+            const gamepads = navigator.getGamepads();
+            
+                 for (let i = 0; i < gamepads.length && i < 3; i++) {
+         if (gamepads[i] && connectedControllers[i] && connectedControllers[i].connected) {
+             const gamepad = gamepads[i];
+             const lastStates = connectedControllers[i].lastButtonStates;
+             
+             // Mapeo AZUL (D-Pad y Left Stick) - común para TODOS los controles
+             checkButtonPress(gamepad, 12, lastStates, 'dpad_up', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'blue', points: 1 });
+             });
+             checkButtonPress(gamepad, 15, lastStates, 'dpad_right', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'blue', points: 2 });
+             });
+             checkButtonPress(gamepad, 13, lastStates, 'dpad_down', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'blue', points: 3 });
+             });
+             checkButtonPress(gamepad, 14, lastStates, 'dpad_left', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'blue', points: 4 });
+             });
+             // Left Stick Click (botón 10, digital)
+             if (gamepad.buttons[10] && gamepad.buttons[10].pressed && !lastStates['lstick']) {
+                 addPendingAction(i, { type: 'points', target: 'blue', points: 5 });
+                 lastStates['lstick'] = true;
+                 console.log(`Control ${i}: Left Stick presionado (+5 azul)`);
+             } else if (!gamepad.buttons[10] || !gamepad.buttons[10].pressed) {
+                 lastStates['lstick'] = false;
+             }
+             
+             // Mapeo ROJO (Bumpers, Triggers, Right Stick) - común para TODOS los controles
+             checkButtonPress(gamepad, 4, lastStates, 'lb', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'red', points: 1 });
+             });
+             checkButtonPress(gamepad, 5, lastStates, 'rb', i, () => {
+                 addPendingAction(i, { type: 'points', target: 'red', points: 2 });
+             });
+             // LT (trigger analógico, botón 6) - usa value > 0.5
+             if (gamepad.buttons[6] && gamepad.buttons[6].value > 0.5 && !lastStates['lt']) {
+                 addPendingAction(i, { type: 'points', target: 'red', points: 3 });
+                 lastStates['lt'] = true;
+                 console.log(`Control ${i}: LT presionado (+3 rojo)`);
+             } else if (gamepad.buttons[6] && gamepad.buttons[6].value <= 0.5) {
+                 lastStates['lt'] = false;
+             }
+             // RT (trigger analógico, botón 7) - usa value > 0.5
+             if (gamepad.buttons[7] && gamepad.buttons[7].value > 0.5 && !lastStates['rt']) {
+                 addPendingAction(i, { type: 'points', target: 'red', points: 4 });
+                 lastStates['rt'] = true;
+                 console.log(`Control ${i}: RT presionado (+4 rojo)`);
+             } else if (gamepad.buttons[7] && gamepad.buttons[7].value <= 0.5) {
+                 lastStates['rt'] = false;
+             }
+             // Right Stick Click (botón 11, digital)
+             if (gamepad.buttons[11] && gamepad.buttons[11].pressed && !lastStates['rstick']) {
+                 addPendingAction(i, { type: 'points', target: 'red', points: 5 });
+                 lastStates['rstick'] = true;
+                 console.log(`Control ${i}: Right Stick presionado (+5 rojo)`);
+             } else if (!gamepad.buttons[11] || !gamepad.buttons[11].pressed) {
+                 lastStates['rstick'] = false;
+             }
+             
+             // Actualiza lastStates para botones digitales (D-Pad, LB, RB)
+             const digitalButtons = { dpad_up: 12, dpad_right: 15, dpad_down: 13, dpad_left: 14, lb: 4, rb: 5 };
+             Object.keys(digitalButtons).forEach(btnName => {
+                 const index = digitalButtons[btnName];
+                 if (gamepad.buttons[index]) {
+                     lastStates[btnName] = gamepad.buttons[index].pressed;
+                 }
+             });
+         }
+     }
+     
+            
+            requestAnimationFrame(pollMultipleGamepads);
+        }
+
+        function checkButtonPress(gamepad, buttonIndex, lastStates, buttonName, controllerId, callback) {
+            if (gamepad.buttons[buttonIndex]) {
+                const isPressed = gamepad.buttons[buttonIndex].pressed;
+                const wasPressed = lastStates[buttonName] || false;
+                
+                if (isPressed && !wasPressed) {
+                    callback();
+                }
+                
+                lastStates[buttonName] = isPressed;
+            }
+        }
+
+        // Funciones originales modificadas para trabajar con multi-controller
+        function changePoints(competitor, change) {
+            if (!settings.enableMultiController) {
+                // Modo manual - ejecuta inmediatamente
+                if (gameState.isMatchEnded) return;
+                
+                if (competitor === 'red') {
+                    gameState.redScore = Math.max(0, gameState.redScore + change);
+                } else {
+                    gameState.blueScore = Math.max(0, gameState.blueScore + change);
+                }
+                updateDisplay();
+            }
+            // En modo multi-controller, solo los controles pueden marcar puntos
+        }
+
+        function changePenalties(competitor, change) {
+            if (gameState.isMatchEnded) return;
+            
+            if (competitor === 'red') {
+                gameState.redPenalties = Math.max(0, gameState.redPenalties + change);
+                if (gameState.redPenalties >= settings.penaltyLimit) {
+                    showPenaltyWinModal('blue');
+                }
+            } else {
+                gameState.bluePenalties = Math.max(0, gameState.bluePenalties + change);
+                if (gameState.bluePenalties >= settings.penaltyLimit) {
+                    showPenaltyWinModal('red');
+                }
+            }
+            updateDisplay();
+        }
+
+        // Resto del código original sin cambios...
+        
         // Disable cache function
         function disableCache() {
             // Clear localStorage scoreboard data on page load
@@ -957,7 +1335,6 @@ if (typeof BroadcastChannel !== 'undefined') {
         }
 
         function loadSettings() {
-            // Don't load from localStorage to disable cache
             gameState.timeRemaining = settings.roundTime;
             updateSettingsForm();
         }
@@ -971,16 +1348,15 @@ if (typeof BroadcastChannel !== 'undefined') {
             settings.resetScoreBetweenRounds = document.getElementById('resetScoreBetweenRounds').checked;
             settings.resetPenaltiesBetweenRounds = document.getElementById('resetPenaltiesBetweenRounds').checked;
             settings.trackRoundWinners = document.getElementById('trackRoundWinners').checked;
-            settings.enableGamepad = document.getElementById('enableGamepad').checked;
+            settings.enableMultiController = document.getElementById('enableMultiController').checked;
 
-            // Don't save to localStorage to disable cache
-            
             // Reset match
             startNewMatch();
             closeModal('settingsModal');
-            if (settings.enableGamepad) {
-    initGamepad();  // Re-inicia listeners y polling
-}
+            
+            if (settings.enableMultiController) {
+                initMultiController();
+            }
         }
 
         function updateSettingsForm() {
@@ -991,14 +1367,7 @@ if (typeof BroadcastChannel !== 'undefined') {
             document.getElementById('resetScoreBetweenRounds').checked = settings.resetScoreBetweenRounds;
             document.getElementById('resetPenaltiesBetweenRounds').checked = settings.resetPenaltiesBetweenRounds;
             document.getElementById('trackRoundWinners').checked = settings.trackRoundWinners;
-            document.getElementById('enableGamepad').checked = settings.enableGamepad;
-            
-            // Update gamepad controls visibility
-            const controlsElement = document.getElementById('gamepadControls');
-            const enableCheckbox = document.getElementById('enableGamepad');
-            if (enableCheckbox && enableCheckbox.checked && gamepadConnected) {
-                controlsElement.style.display = 'block';
-            }
+            document.getElementById('enableMultiController').checked = settings.enableMultiController;
         }
 
         function resetMatch() {
@@ -1024,100 +1393,93 @@ if (typeof BroadcastChannel !== 'undefined') {
         }
 
         function startNewMatch() {
-    gameState = {
-        currentRound: 1,
-        redScore: 0,
-        blueScore: 0,
-        redPenalties: 0,
-        bluePenalties: 0,
-        redWins: 0,
-        blueWins: 0,
-        timeRemaining: settings.roundTime,
-        isTimerRunning: false,
-        timerInterval: null,
-        controlsVisible: true,
-        isRestTime: false,
-        isMatchEnded: false,
-        controlsDisabled: false
-    };
-    // Oculta New Match y muestra End Match de nuevo
-    document.getElementById('newMatchBtn').classList.add('hidden');
-    document.getElementById('endMatchBtn').classList.remove('hidden');
-    updateDisplay();
-}
-
-
-function updateDisplay() {
-    // Update scores
-    document.getElementById('redScore').textContent = gameState.redScore;
-    document.getElementById('blueScore').textContent = gameState.blueScore;
-    // Fix: penalty counters show only penalties, not points
-    document.getElementById('redTotal').textContent = gameState.redPenalties;
-    document.getElementById('blueTotal').textContent = gameState.bluePenalties;
-
-    // Update points/penalties controls
-    document.getElementById('redPoints').value = gameState.redScore;
-    document.getElementById('bluePoints').value = gameState.blueScore;
-    document.getElementById('redPenalties').value = gameState.redPenalties;
-    document.getElementById('bluePenalties').value = gameState.bluePenalties;
-
-    // Update penalty bars
-    const redPenaltyPercent = (gameState.redPenalties / settings.penaltyLimit) * 100;
-    const bluePenaltyPercent = (gameState.bluePenalties / settings.penaltyLimit) * 100;
-    document.getElementById('redPenaltyBar').style.width = redPenaltyPercent + '%';
-    document.getElementById('bluePenaltyBar').style.width = bluePenaltyPercent + '%';
-
-    // Update timer
-    const minutes = Math.floor(gameState.timeRemaining / 60);
-    const seconds = gameState.timeRemaining % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-    // Update round and wins
-    document.getElementById('currentRound').textContent = gameState.currentRound;
-    document.getElementById('redWins').textContent = gameState.redWins;
-    document.getElementById('blueWins').textContent = gameState.blueWins;
-
-    // Update timer appearance and match status
-    const timerElement = document.getElementById('timer');
-    const matchStatusElement = document.getElementById('matchStatus');
-    const mainContainer = document.getElementById('mainContainer');
-
-    // Reset timer classes (incluyendo paused)
-    timerElement.classList.remove('active', 'rest-mode', 'match-ended', 'paused');
-    
-    if (gameState.isMatchEnded) {
-        timerElement.classList.add('match-ended');
-        matchStatusElement.textContent = `ROUND ${gameState.currentRound} - MATCH ENDED`;
-        matchStatusElement.classList.remove('hidden');
-        mainContainer.classList.add('controls-disabled');
-    } else if (gameState.isRestTime) {
-        timerElement.classList.add('rest-mode');
-        matchStatusElement.textContent = `ROUND ${gameState.currentRound} - BREAK`;
-        matchStatusElement.classList.remove('hidden');
-        mainContainer.classList.remove('controls-disabled');
-        
-        // Nueva lógica: Si está pausado en break, agrega clase paused (gris)
-        if (!gameState.isTimerRunning) {
-            timerElement.classList.add('paused');
+            gameState = {
+                currentRound: 1,
+                redScore: 0,
+                blueScore: 0,
+                redPenalties: 0,
+                bluePenalties: 0,
+                redWins: 0,
+                blueWins: 0,
+                timeRemaining: settings.roundTime,
+                isTimerRunning: false,
+                timerInterval: null,
+                controlsVisible: true,
+                isRestTime: false,
+                isMatchEnded: false,
+                controlsDisabled: false
+            };
+            document.getElementById('newMatchBtn').classList.add('hidden');
+            document.getElementById('endMatchBtn').classList.remove('hidden');
+            updateDisplay();
         }
-    } else {
-        if (gameState.isTimerRunning) {
-            timerElement.classList.add('active');
+
+        function updateDisplay() {
+            // Update scores
+            document.getElementById('redScore').textContent = gameState.redScore;
+            document.getElementById('blueScore').textContent = gameState.blueScore;
+            document.getElementById('redTotal').textContent = gameState.redPenalties;
+            document.getElementById('blueTotal').textContent = gameState.bluePenalties;
+
+            // Update points/penalties controls
+            document.getElementById('redPoints').value = gameState.redScore;
+            document.getElementById('bluePoints').value = gameState.blueScore;
+            document.getElementById('redPenalties').value = gameState.redPenalties;
+            document.getElementById('bluePenalties').value = gameState.bluePenalties;
+
+            // Update penalty bars
+            const redPenaltyPercent = (gameState.redPenalties / settings.penaltyLimit) * 100;
+            const bluePenaltyPercent = (gameState.bluePenalties / settings.penaltyLimit) * 100;
+            document.getElementById('redPenaltyBar').style.width = redPenaltyPercent + '%';
+            document.getElementById('bluePenaltyBar').style.width = bluePenaltyPercent + '%';
+
+            // Update timer
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Update round and wins
+            document.getElementById('currentRound').textContent = gameState.currentRound;
+            document.getElementById('redWins').textContent = gameState.redWins;
+            document.getElementById('blueWins').textContent = gameState.blueWins;
+
+            // Update timer appearance and match status
+            const timerElement = document.getElementById('timer');
+            const matchStatusElement = document.getElementById('matchStatus');
+            const mainContainer = document.getElementById('mainContainer');
+
+            timerElement.classList.remove('active', 'rest-mode', 'match-ended', 'paused');
+            
+            if (gameState.isMatchEnded) {
+                timerElement.classList.add('match-ended');
+                matchStatusElement.textContent = `ROUND ${gameState.currentRound} - MATCH ENDED`;
+                matchStatusElement.classList.remove('hidden');
+                mainContainer.classList.add('controls-disabled');
+            } else if (gameState.isRestTime) {
+                timerElement.classList.add('rest-mode');
+                matchStatusElement.textContent = `ROUND ${gameState.currentRound} - BREAK`;
+                matchStatusElement.classList.remove('hidden');
+                mainContainer.classList.remove('controls-disabled');
+                
+                if (!gameState.isTimerRunning) {
+                    timerElement.classList.add('paused');
+                }
+            } else {
+                if (gameState.isTimerRunning) {
+                    timerElement.classList.add('active');
+                }
+                matchStatusElement.classList.add('hidden');
+                mainContainer.classList.remove('controls-disabled');
+            }
+
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({
+                    type: 'update',
+                    gameState: { ...gameState },
+                    settings: { ...settings }
+                });
+            }
         }
-        matchStatusElement.classList.add('hidden');
-        mainContainer.classList.remove('controls-disabled');
-    }
-
-    if (broadcastChannel) {
-    broadcastChannel.postMessage({
-        type: 'update',
-        gameState: { ...gameState },  // Copia del estado
-        settings: { ...settings }
-    });
-}
-}
-
-
 
         function toggleTimer() {
             if (gameState.isMatchEnded) return;
@@ -1130,14 +1492,13 @@ function updateDisplay() {
         }
 
         function startTimer() {
-                const urlParams = new URLSearchParams(window.location.search);
-    const isDisplayMode = urlParams.get('mode') === 'display';
-    if (isDisplayMode) {
-        console.log('startTimer bloqueado en modo display');  // Depuración
-        return;  // No inicia localmente
-    }
-    
-    if (gameState.timeRemaining <= 0 || gameState.isMatchEnded) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDisplayMode = urlParams.get('mode') === 'display';
+            if (isDisplayMode) {
+                console.log('startTimer bloqueado en modo display');
+                return;
+            }
+            
             if (gameState.timeRemaining <= 0 || gameState.isMatchEnded) return;
             
             gameState.isTimerRunning = true;
@@ -1148,10 +1509,8 @@ function updateDisplay() {
                 if (gameState.timeRemaining <= 0) {
                     pauseTimer();
                     if (gameState.isRestTime) {
-                        // Rest time ended, start next round
                         startNextRound();
                     } else {
-                        // Round time ended, show time win modal
                         showTimeWinModal();
                     }
                 }
@@ -1160,46 +1519,18 @@ function updateDisplay() {
         }
 
         function pauseTimer() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDisplayMode = urlParams.get('mode') === 'display';
-    if (isDisplayMode && gameState.isTimerRunning) {
-        console.log('pauseTimer forzado en modo display via sync');  // Depuración
-        // Permite pausar solo si sync lo requiere (no bloquea completamente)
-    } else if (isDisplayMode) {
-        return;  // No pausa si no está corriendo
-    }
-    
-    gameState.isTimerRunning = false;
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-        gameState.timerInterval = null;
-    }
-    updateDisplay();
-}
-        function changePoints(competitor, change) {
-            if (gameState.isMatchEnded) return;
-            
-            if (competitor === 'red') {
-                gameState.redScore = Math.max(0, gameState.redScore + change);
-            } else {
-                gameState.blueScore = Math.max(0, gameState.blueScore + change);
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDisplayMode = urlParams.get('mode') === 'display';
+            if (isDisplayMode && gameState.isTimerRunning) {
+                console.log('pauseTimer forzado en modo display via sync');
+            } else if (isDisplayMode) {
+                return;
             }
-            updateDisplay();
-        }
-
-        function changePenalties(competitor, change) {
-            if (gameState.isMatchEnded) return;
             
-            if (competitor === 'red') {
-                gameState.redPenalties = Math.max(0, gameState.redPenalties + change);
-                if (gameState.redPenalties >= settings.penaltyLimit) {
-                    showPenaltyWinModal('blue');
-                }
-            } else {
-                gameState.bluePenalties = Math.max(0, gameState.bluePenalties + change);
-                if (gameState.bluePenalties >= settings.penaltyLimit) {
-                    showPenaltyWinModal('red');
-                }
+            gameState.isTimerRunning = false;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
             }
             updateDisplay();
         }
@@ -1251,7 +1582,6 @@ function updateDisplay() {
         }
 
         function startNewRound() {
-            // Start rest period
             gameState.isRestTime = true;
             gameState.timeRemaining = settings.restTime;
             gameState.isTimerRunning = false;
@@ -1316,19 +1646,19 @@ function updateDisplay() {
 
         function showSettings() {
             updateSettingsForm();
+            updateControllerStatus();
             document.getElementById('settingsModal').classList.remove('hidden');
         }
 
-    function endMatch() {
-    if (confirm('¿Está seguro de que desea terminar la pelea?')) {
-        gameState.isMatchEnded = true;
-        pauseTimer();
-        // Oculta End Match y muestra New Match en su lugar
-        document.getElementById('endMatchBtn').classList.add('hidden');
-        document.getElementById('newMatchBtn').classList.remove('hidden');
-        updateDisplay();
-    }
-}
+        function endMatch() {
+            if (confirm('¿Está seguro de que desea terminar la pelea?')) {
+                gameState.isMatchEnded = true;
+                pauseTimer();
+                document.getElementById('endMatchBtn').classList.add('hidden');
+                document.getElementById('newMatchBtn').classList.remove('hidden');
+                updateDisplay();
+            }
+        }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -1344,161 +1674,111 @@ function updateDisplay() {
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Gamepad Support
-        function initGamepad() {
-            window.addEventListener('gamepadconnected', (e) => {
-                gamepadConnected = true;
-                gamepadIndex = e.gamepad.index;
-                updateGamepadStatus();
-                console.log('Control conectado:', e.gamepad.id);
-            });
-
-            window.addEventListener('gamepaddisconnected', (e) => {
-                if (e.gamepad.index === gamepadIndex) {
-                    gamepadConnected = false;
-                    gamepadIndex = -1;
-                    updateGamepadStatus();
-                    console.log('Control desconectado');
+        function openExternalDisplay() {
+            if (confirm('¿Abrir visualización en pantalla externa? Se abrirá una ventana nueva.')) {
+                let externalWindow;
+                let leftPos = 0;
+                let topPos = 0;
+                let width = screen.availWidth;
+                let height = screen.availHeight;
+                
+                if (screen.availLeft > 0) {
+                    leftPos = screen.availLeft - width;
+                } else if (screen.width > screen.availWidth) {
+                    leftPos = screen.width;
+                } else {
+                    leftPos = (screen.width - 1024) / 2;
+                    topPos = (screen.height - 768) / 2;
+                    width = 1024;
+                    height = 768;
+                    console.log('Solo una pantalla detectada: Abriendo centrado');
                 }
-            });
-
-            if (settings.enableGamepad) {
-                pollGamepad();
+                
+                const displayUrl = window.location.href.split('?')[0] + '?mode=display';
+                
+                externalWindow = window.open(
+                    displayUrl,
+                    'taekwondo-display',
+                    `width=${width},height=${height},left=${leftPos},top=${topPos},fullscreen=yes,scrollbars=no,toolbar=no,menubar=no,resizable=yes`
+                );
+                
+                if (externalWindow) {
+                    console.log(`Ventana externa abierta en posición: left=${leftPos}, top=${topPos}`);
+                    
+                    if (broadcastChannel) {
+                        broadcastChannel.postMessage({
+                            type: 'update',
+                            gameState: { ...gameState },
+                            settings: { ...settings }
+                        });
+                    }
+                    
+                    setTimeout(() => {
+                        if (externalWindow.closed) {
+                            alert('Ventana bloqueada por pop-up blocker. Habilita pop-ups para este sitio y reintenta.');
+                        }
+                    }, 1000);
+                } else {
+                    alert('No se pudo abrir la ventana. Verifica pop-up blockers o permisos del navegador.');
+                }
             }
         }
 
-        function updateGamepadStatus() {
-            const statusElement = document.getElementById('gamepadStatus');
-            const controlsElement = document.getElementById('gamepadControls');
-            const enableCheckbox = document.getElementById('enableGamepad');
+        function initDisplayMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDisplayMode = urlParams.get('mode') === 'display';
             
-            if (gamepadConnected) {
-                const gamepads = navigator.getGamepads();
-                const gamepad = gamepads[gamepadIndex];
-                const gamepadName = gamepad ? gamepad.id : 'Control desconocido';
+            if (isDisplayMode) {
+                console.log('Modo Display activado: Ocultando controles y toolbar');
+                document.getElementById('mainContainer').classList.add('display-mode');
+                gameState.controlsVisible = false;
+                document.getElementById('mainContainer').classList.add('controls-hidden');
                 
-                statusElement.textContent = `✅ ${gamepadName} conectado`;
-                statusElement.className = 'gamepad-status gamepad-connected';
+                const timerElement = document.getElementById('timer');
+                timerElement.onclick = null;
+                timerElement.style.pointerEvents = 'none';
+                console.log('Timer bloqueado en modo display');
                 
-                // Show controls mapping if gamepad is enabled or connected
-                if (enableCheckbox && enableCheckbox.checked) {
-                    controlsElement.style.display = 'block';
+                const displayBtn = document.querySelector('.toolbar-icon[title="Abrir en Pantalla Externa"]');
+                if (displayBtn) displayBtn.style.display = 'none';
+                
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('Auto-fullscreen failed in display mode:', err);
+                    });
+                    }
+                
+                if (broadcastChannel) {
+                    let lastTimerRunning = gameState.isTimerRunning;
+                    
+                    broadcastChannel.addEventListener('message', (event) => {
+                        if (event.data.type === 'update') {
+                            Object.assign(gameState, event.data.gameState);
+                            Object.assign(settings, event.data.settings);
+                            
+                            if (gameState.isTimerRunning !== lastTimerRunning) {
+                                if (!gameState.isTimerRunning) {
+                                    console.log('Sync: Pausando timer local en display');
+                                    pauseTimer();
+                                } else {
+                                    console.log('Sync: Iniciando timer local en display');
+                                    startTimer();
+                                }
+                                lastTimerRunning = gameState.isTimerRunning;
+                            }
+                            
+                            updateDisplay();
+                        }
+                    });
+                    console.log('Escuchando sync en modo display');
                 }
             } else {
-                statusElement.textContent = '❌ No se detectó control de Xbox';
-                statusElement.className = 'gamepad-status gamepad-disconnected';
-                controlsElement.style.display = 'none';
+                console.log('Modo Control: Controles visibles');
             }
         }
 
-        let lastButtonStates = {};
-
-        function pollGamepad() {
-            if (!settings.enableGamepad) return;
-
-            const gamepads = navigator.getGamepads();
-            if (gamepadConnected && gamepads[gamepadIndex]) {
-                const gamepad = gamepads[gamepadIndex];
-                
-                // Button mapping for Xbox controller
-                const buttons = {
-                    A: 0,           // A button - Red +1 point
-                    B: 1,           // B button - Blue +1 point
-                    X: 2,           // X button - Red penalty
-                    Y: 3,           // Y button - Blue penalty
-                    LB: 4,          // Left bumper - Red -1 point
-                    RB: 5,          // Right bumper - Blue -1 point
-                    VIEW: 8,        // View button - Toggle timer
-                    MENU: 9,        // Menu button - Toggle controls visibility
-                    DPAD_UP: 12,    // D-pad up - Reset timer
-                    DPAD_DOWN: 13,  // D-pad down - End match
-                    DPAD_LEFT: 14,  // D-pad left - Previous round
-                    DPAD_RIGHT: 15  // D-pad right - Next round
-                };
-
-                // Check each button
-                for (const [buttonName, buttonIndex] of Object.entries(buttons)) {
-                    if (gamepad.buttons[buttonIndex]) {
-                        const isPressed = gamepad.buttons[buttonIndex].pressed;
-                        const wasPressed = lastButtonStates[buttonName] || false;
-                        
-                        // Only act on button press (not hold)
-                        if (isPressed && !wasPressed) {
-                            handleGamepadButton(buttonName);
-                        }
-                        
-                        lastButtonStates[buttonName] = isPressed;
-                    }
-                }
-            }
-            
-            // Continue polling
-            requestAnimationFrame(pollGamepad);
-        }
-
-        function handleGamepadButton(buttonName) {
-            switch (buttonName) {
-                case 'A':
-                    changePoints('red', 1);
-                    break;
-                case 'B':
-                    changePoints('blue', 1);
-                    break;
-                case 'X':
-                    changePenalties('red', 1);
-                    break;
-                case 'Y':
-                    changePenalties('blue', 1);
-                    break;
-                case 'LB':
-                    changePoints('red', -1);
-                    break;
-                case 'RB':
-                    changePoints('blue', -1);
-                    break;
-                case 'VIEW':
-                    toggleTimer();
-                    break;
-                case 'MENU':
-                    toggleControlsVisibility();
-                    break;
-                case 'DPAD_UP':
-                    gameState.timeRemaining = gameState.isRestTime ? settings.restTime : settings.roundTime;
-                    pauseTimer(); // Stop timer when resetting
-                    updateDisplay();
-                    break;
-                case 'DPAD_DOWN':
-                    endMatch();
-                    break;
-            }
-        }
-
-        // Start gamepad polling if enabled
-        if (settings.enableGamepad) {
-            pollGamepad();
-        }
-
-        // Handle settings changes
-        document.getElementById('enableGamepad').addEventListener('change', function(e) {
-    settings.enableGamepad = e.target.checked;  // Actualiza setting inmediatamente
-    const controlsElement = document.getElementById('gamepadControls');
-    if (e.target.checked) {
-        console.log('Gamepad habilitado manualmente');  // Depuración
-        if (gamepadConnected) {
-            controlsElement.style.display = 'block';
-        }
-        pollGamepad();  // Inicia polling dinámicamente
-    } else {
-        console.log('Gamepad deshabilitado manualmente');  // Depuración
-        controlsElement.style.display = 'none';
-        // Opcional: Detener polling si quieres optimizar, pero requestAnimationFrame se auto-maneja
-    }
-    updateGamepadStatus();  // Refresca status
-});
-
-        // Keyboard shortcuts
+        // Keyboard shortcuts (mantener funcionalidad original)
         document.addEventListener('keydown', function(e) {
-            // Prevent default behavior for game keys
             const gameKeys = ['Space', 'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyA', 'KeyS', 'KeyD', 'KeyF'];
             if (gameKeys.includes(e.code)) {
                 e.preventDefault();
@@ -1536,7 +1816,6 @@ function updateDisplay() {
                     toggleControlsVisibility();
                     break;
                 case 'KeyT':
-                    // Reset timer (T key)
                     gameState.timeRemaining = gameState.isRestTime ? settings.restTime : settings.roundTime;
                     pauseTimer();
                     updateDisplay();
@@ -1546,7 +1825,6 @@ function updateDisplay() {
                     toggleFullscreen();
                     break;
                 case 'Escape':
-                    // Close any open modal
                     document.querySelectorAll('.modal').forEach(modal => {
                         modal.classList.add('hidden');
                     });
@@ -1564,142 +1842,87 @@ function updateDisplay() {
             }
         });
 
-        // Update gamepad status on page load
-        updateGamepadStatus();
+        // Handle settings changes para multi-controller
 
-        // Chequeo inicial para modo display (oculta controles permanentemente)
-// Chequeo inicial para modo display (oculta controles permanentemente)
-function initDisplayMode() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDisplayMode = urlParams.get('mode') === 'display';
-    
-    if (isDisplayMode) {
-        console.log('Modo Display activado: Ocultando controles y toolbar');
-        document.getElementById('mainContainer').classList.add('display-mode');
-        gameState.controlsVisible = false;  // Desactiva toggle de visibilidad
-        document.getElementById('mainContainer').classList.add('controls-hidden');  // Oculta controles
-        
-        // Bloquea clics en timer (remueve onclick y asegura no interactivo)
-        const timerElement = document.getElementById('timer');
-        timerElement.onclick = null;  // Remueve event listener
-        timerElement.style.pointerEvents = 'none';  // Bloqueo extra
-        console.log('Timer bloqueado en modo display');
-        
-        // Oculta botón de display (no se necesita en externa)
-        const displayBtn = document.querySelector('.toolbar-icon[title="Abrir en Pantalla Externa"]');
-        if (displayBtn) displayBtn.style.display = 'none';
-        
-        // Opcional: Auto-fullscreen en modo display
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.log('Auto-fullscreen failed in display mode:', err);
-            });
-        }
-        
-        // Escucha sync desde ventana principal (con sync forzado del timer)
-        if (broadcastChannel) {
-            let lastTimerRunning = gameState.isTimerRunning;  // Track para detectar cambios
-            
-            broadcastChannel.addEventListener('message', (event) => {
-                if (event.data.type === 'update') {
-                    // Actualiza gameState y settings desde mensaje
-                    Object.assign(gameState, event.data.gameState);
-                    Object.assign(settings, event.data.settings);
-                    
-                    // Sync forzado del timer: Si cambió isTimerRunning, actúa localmente
-                    if (gameState.isTimerRunning !== lastTimerRunning) {
-                        if (!gameState.isTimerRunning) {
-                            console.log('Sync: Pausando timer local en display (de principal)');  // Depuración
-                            pauseTimer();  // Detiene interval local si corriendo
-                        } else {
-                            console.log('Sync: Iniciando timer local en display (de principal)');  // Depuración
-                            startTimer();  // Inicia si principal lo hizo (raro, pero sync completo)
-                        }
-                        lastTimerRunning = gameState.isTimerRunning;
-                    }
-                    
-                    updateDisplay();  // Refresca UI
-                }
-            });
-            console.log('Escuchando sync en modo display (con timer sync)');
-        }
-    } else {
-        console.log('Modo Control (laptop): Controles visibles');
-    }
-}
 
-// Función para abrir ventana en pantalla externa
-function openExternalDisplay() {
-    if (confirm('¿Abrir visualización en pantalla externa? Se abrirá una ventana nueva.')) {
-        let externalWindow;
-        let leftPos = 0;
-        let topPos = 0;
-        let width = screen.availWidth;
-        let height = screen.availHeight;
-        
-        // Detección simple de segunda pantalla (asumiendo a la derecha, común en HDMI)
-        // Si screen.availLeft > 0, hay una pantalla izquierda; ajusta según tu setup
-        if (screen.availLeft > 0) {
-            // Segunda pantalla a la izquierda
-            leftPos = screen.availLeft - width;
-        } else if (screen.width > screen.availWidth) {
-            // Detecta si hay espacio a la derecha (barras de tareas, etc.)
-            leftPos = screen.width;
-        } else {
-            // Fallback: Centrado en pantalla principal (para testing sin HDMI)
-            leftPos = (screen.width - 1024) / 2;
-            topPos = (screen.height - 768) / 2;
-            width = 1024;
-            height = 768;
-            console.log('Solo una pantalla detectada: Abriendo centrado');
-        }
-        
-        // URL con modo display
-        const displayUrl = window.location.href.split('?')[0] + '?mode=display';  // Limpia params y agrega mode=display
-        
-        // Abre ventana (features: maximizada, sin toolbar/menús para look limpio)
-        externalWindow = window.open(
-            displayUrl,
-            'taekwondo-display',
-            `width=${width},height=${height},left=${leftPos},top=${topPos},fullscreen=yes,scrollbars=no,toolbar=no,menubar=no,resizable=yes`
-        );
-        
-        if (externalWindow) {
-            console.log(`Ventana externa abierta en posición: left=${leftPos}, top=${topPos}`);
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            disableCache();
+            loadSettings();
+            updateDisplay();
+
+            document.getElementById('enableMultiController').addEventListener('change', function(e) {
+           settings.enableMultiController = e.target.checked;
+           const controlsElement = document.getElementById('gamepadControls');
+           if (e.target.checked) {
+               console.log('Multi habilitado: Iniciando polling');
+               controlsElement.style.display = 'block';
+               stopPolling = false;  // Reanuda polling
+               initMultiController();  // Re-inicia listeners de conexión
+               pollMultipleGamepads();  // Inicia/reinicia el loop
+           } else {
+               console.log('Multi deshabilitado: Deteniendo polling');
+               controlsElement.style.display = 'none';
+               stopPolling = true;  // Detiene requestAnimationFrame
+               connectedControllers = {};
+               pendingActions = {};
+               if (validationTimeout) clearTimeout(validationTimeout);
+           }
+           updateControllerStatus();
+       });
             
-            // Envía estado inicial via broadcast
-            if (broadcastChannel) {
-                broadcastChannel.postMessage({
-                    type: 'update',
-                    gameState: { ...gameState },
-                    settings: { ...settings }
-                });
+            if (settings.enableMultiController) {
+                initMultiController();
+                updateControllerStatus();
             }
             
-            // Verifica si se cargó (evita pop-up blockers)
-            setTimeout(() => {
-                if (externalWindow.closed) {
-                    alert('Ventana bloqueada por pop-up blocker. Habilita pop-ups para este sitio y reintenta.');
+            requestLandscape();
+            setTimeout(initDisplayMode, 100);
+        });
+
+        // Función para verificar gamepad conectado periódicamente
+        function checkGamepadConnection() {
+            const gamepads = navigator.getGamepads();
+            
+            for (let i = 0; i < gamepads.length && i < 3; i++) {
+                if (gamepads[i]) {
+                    if (!connectedControllers[i]) {
+                        connectedControllers[i] = {
+                            connected: true,
+                            gamepad: gamepads[i],
+                            lastButtonStates: {}
+                        };
+                        console.log(`Control ${i} detectado:`, gamepads[i].id);
+                        updateControllerStatus();
+                    } else if (!connectedControllers[i].connected) {
+                        connectedControllers[i].connected = true;
+                        connectedControllers[i].gamepad = gamepads[i];
+                        console.log(`Control ${i} reconectado`);
+                        updateControllerStatus();
+                    }
+                } else if (connectedControllers[i] && connectedControllers[i].connected) {
+                    connectedControllers[i].connected = false;
+                    console.log(`Control ${i} desconectado`);
+                    updateControllerStatus();
                 }
-            }, 1000);
-        } else {
-            alert('No se pudo abrir la ventana. Verifica pop-up blockers o permisos del navegador.');
+            }
         }
-    }
-}
 
-// Inicializa modo display al cargar (después de DOMContentLoaded)
-document.addEventListener('DOMContentLoaded', function() {
-    disableCache();
-    loadSettings();
-    updateDisplay();
-    initGamepad();
-    requestLandscape();
-    
-    // Nuevo: Inicializa modo display después de lo anterior (pequeño delay para DOM)
-    setTimeout(initDisplayMode, 100);
-});
+        setInterval(checkGamepadConnection, 2000);
 
+        function cleanupExpiredActions() {
+            const now = Date.now();
+            const maxAge = 5000;
+            
+            for (const actionKey in pendingActions) {
+                if (now - pendingActions[actionKey].timestamp > maxAge) {
+                    console.log(`Acción expirada eliminada: ${actionKey}`);
+                    delete pendingActions[actionKey];
+                }
+            }
+        }
+
+        setInterval(cleanupExpiredActions, 3000);
 
     </script>
 </body>
